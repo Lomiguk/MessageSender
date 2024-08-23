@@ -5,9 +5,9 @@ import lombok.Data;
 import java.util.UUID;
 
 @Data
-public class MessageResponse {
+public class StatusResponse {
 
     private UUID messageId;
-    private String recipient;
     private String status;
+    //TODO history of status changing
 }
