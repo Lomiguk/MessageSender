@@ -2,7 +2,8 @@ server:
   port: 8181
 spring:
   config:
-    application:
+    import: optional:file:.env[.properties]
+  application:
       name: MessageSender
   datasource:
     url: ${SPRING_DATASOURCE_URL}
@@ -17,6 +18,7 @@ spring:
     properties:
       hibernate.hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
       hibernate.hibernate.format_sql: true
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
   mvc:
     pathmatch:
       matching-strategy: ant_path_matcher
@@ -24,3 +26,18 @@ spring:
     change-log: db/changelog/db.changelog-master.yaml
     enabled: true
     drop-first: false
+  mail:
+    sender: ${MAIL_SENDER_MAIL}
+    host: ${MAIL_HOST}
+    port: ${MAIL_PORT}
+    username: ${MAIL_SENDER}
+    password: ${MAIL_PASSWORD}
+    protocol: ${MAIL_PROTOCOL}
+    properties:
+      mail:
+        smtp:
+          auth: ${MAIL_AUTH}
+          starttls:
+            enable: ${MAIL_STARTTLS_ENABLE}
+        debug: ${MAIL_DEBUG}}
+
