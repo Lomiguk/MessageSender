@@ -2,7 +2,8 @@ package ru.sckibin.messagesender.api.enumType;
 
 public enum MessageType {
 
-    EMAIL ("email");
+    EMAIL ("email"),
+    UNREALIZED("unrealized");
 
     public final String value;
 
