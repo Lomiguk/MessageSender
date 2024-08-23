@@ -8,6 +8,8 @@ import java.util.UUID;
 public class MessageResponse {
 
     private UUID messageId;
-    private String recipient;
+    private String type;
     private String status;
+    private String recipient;
+    private String failedDescription = null;
 }
