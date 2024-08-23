@@ -5,6 +5,7 @@ import ru.sckibin.messagesender.api.enumType.MessageType;
 
 @Data
 public class MessageRequest {
+
     private String recipient;
     private String subject;
     private MessageType type;
