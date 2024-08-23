@@ -13,10 +13,20 @@ services:
     container_name: messageSender_v1_service
     depends_on:
       - db_postgres_15
+    env_file:
+      - .env
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://db_postgres_15/messageSender
+      - POSTGRES_USER = postgres
+      - POSTGRES_PASSWORD = postgres
+      - SPRING_DATASOURCE_URL = jdbc:postgresql://db_postgres_15/messageSender
+      - MAIL_HOST = ${MAIL_HOST}
+      - MAIL_PORT = ${MAIL_PORT}
+      - MAIL_SENDER = ${MAIL_SENDER}
+      - MAIL_PASSWORD = ${MAIL_PASSWORD}
+      - MAIL_PROTOCOL = ${MAIL_PROTOCOL}
+      - MAIL_AUTH = ${MAIL_AUTH}
+      - MAIL_STARTTLS_ENABLE = ${MAIL_STARTTLS_ENABLE}
+      - EMAIL_DEBUG = ${EMAIL_DEBUG}
     ports:
       - "8181:8181"
 
