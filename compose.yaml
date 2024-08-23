@@ -1,9 +1,33 @@
+version: '3.8'
+
+volumes:
+  db-data:
+    driver: local
+
 services:
-  postgres:
-    image: 'postgres:latest'
+  backend:
+    image: 'docker-spring-boot-postgres:latest'
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: messageSender_v1_service
+    depends_on:
+      - db_postgres_15
     environment:
-      - 'POSTGRES_DB=mydatabase'
-      - 'POSTGRES_PASSWORD=secret'
-      - 'POSTGRES_USER=myuser'
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db_postgres_15/messageSender
     ports:
-      - '5432'
+      - "8181:8181"
+
+  db_postgres_15:
+    image: postgres:15
+    container_name: db_postgres
+    environment:
+      POSTGRES_DB: messageSender
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - '5435:5432'
+    volumes:
+      - db-data:/var/lib/postgresql/data
