@@ -4,8 +4,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.mail.MailException;
 import org.springframework.stereotype.Service;
 import ru.sckibin.messagesender.api.dto.MessageDTO;
+import ru.sckibin.messagesender.api.enumType.MessageFailedCode;
 import ru.sckibin.messagesender.api.enumType.MessageStatus;
 import ru.sckibin.messagesender.api.request.MessageRequest;
 import ru.sckibin.messagesender.api.response.MessageResponse;
@@ -43,22 +45,9 @@ public class MessageServiceImpl implements MessageService {
     public Collection<MessageResponse> send(MessageRequest request) {
         var result = new ArrayList<MessageResponse>();
 
-        for(var type : request.getType()) {
+        for (var type : request.getType()) {
             var message = messageUtil.mapToDTO(request, type);
-            try {
-                setMessageStatus(message, MessageStatus.IN_QUEUE);
-                sendMessage(message);
-            } catch (RuntimeException ex) {
-                LOGGER.info(
-                        String.format("Message (%s) was not sent, exception %s", message.getId(), ex.getMessage())
-                );
-
-                setMessageStatus(message, MessageStatus.FAILED);
-                //TODO change to normal response, for example HTTP status code
-                message.setFailedDescription(ex.getMessage());
-            } finally {
-                result.add(messageUtil.mapToMessageResponse(message));
-            }
+            result.add(sendProcessing(message));
         }
 
         return result;
@@ -120,5 +109,35 @@ public class MessageServiceImpl implements MessageService {
     private void setMessageStatus(MessageDTO message, MessageStatus status) {
         message.setStatus(status);
         messageRepository.save(messageUtil.mapToEntity(message));
+    }
+
+    private void failedMessage(MessageDTO message, MessageFailedCode messageFailedCode) {
+        setMessageStatus(message, MessageStatus.FAILED);
+        message.setFailedDescription(messageUtil.mapToDescription(messageFailedCode));
+    }
+
+    private MessageResponse sendProcessing(MessageDTO message) {
+        try {
+            setMessageStatus(message, MessageStatus.IN_QUEUE);
+            sendMessage(message);
+        } catch (UnrealizedMethodOfSendingException ex) {
+            exceptionProcess(message, ex, MessageFailedCode.UNREALIZED_TYPE_EXCEPTION);
+        } catch (MailException ex) {
+            exceptionProcess(message, ex, MessageFailedCode.MAIL_EXCEPTION);
+        } catch (IllegalArgumentException ex) {
+            exceptionProcess(message, ex, MessageFailedCode.DB_EXCEPTION);
+        } catch (Exception ex) {
+            exceptionProcess(message, ex, MessageFailedCode.UNEXPECTED_EXCEPTION);
+        }
+
+        return messageUtil.mapToMessageResponse(message);
+    }
+
+    private void exceptionProcess(MessageDTO message, Exception ex, MessageFailedCode code) {
+        LOGGER.info(
+                String.format("Message (%s) was not sent, exception %s", message.getId(), ex.getMessage())
+        );
+
+        failedMessage(message, code);
     }
 }

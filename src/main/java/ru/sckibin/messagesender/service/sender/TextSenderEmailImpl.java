@@ -7,6 +7,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import ru.sckibin.messagesender.api.dto.MessageDTO;
+import ru.sckibin.messagesender.api.enumType.MessageFailedCode;
 import ru.sckibin.messagesender.api.enumType.MessageStatus;
 import ru.sckibin.messagesender.repository.MessageRepository;
 import ru.sckibin.messagesender.util.MessageUtil;
@@ -30,7 +31,8 @@ public class TextSenderEmailImpl implements TextSender {
             message.setStatus(MessageStatus.SENT);
         } catch (Exception ex) {
             message.setStatus(MessageStatus.FAILED);
-            message.setFailedDescription(ex.getMessage());
+            message.setFailedDescription(messageUtil.mapToDescription(MessageFailedCode.MAIL_EXCEPTION));
+            messageRepository.save(messageUtil.mapToEntity(message));
         }
 
         messageRepository.save(messageUtil.mapToEntity(message));

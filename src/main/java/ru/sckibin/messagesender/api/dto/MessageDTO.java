@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Data;
 import ru.sckibin.messagesender.api.enumType.MessageStatus;
 import ru.sckibin.messagesender.api.enumType.MessageType;
+import ru.sckibin.messagesender.api.response.FailedDescription;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -21,5 +22,5 @@ public class MessageDTO {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     //TODO change to enum like option
-    private String failedDescription;
+    private FailedDescription failedDescription;
 }
