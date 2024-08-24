@@ -27,6 +27,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.logging.Logger;
 
@@ -55,7 +56,12 @@ public class MessageServiceImpl implements MessageService {
             result.add(sendProcessing(message));
         }
 
-        return result;
+        // Getting actual Data
+        return result.stream()
+                .map((m) -> messageRepository.findById(m.getMessageId()))
+                .flatMap(Optional::stream)
+                .map(messageUtil::mapToMessageResponse)
+                .toList();
     }
 
     @Override
