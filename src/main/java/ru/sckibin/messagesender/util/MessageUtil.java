@@ -4,9 +4,11 @@ import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 import ru.sckibin.messagesender.api.dto.MessageDTO;
+import ru.sckibin.messagesender.api.enumType.MessageFailedCode;
 import ru.sckibin.messagesender.api.enumType.MessageStatus;
 import ru.sckibin.messagesender.api.enumType.MessageType;
 import ru.sckibin.messagesender.api.request.MessageRequest;
+import ru.sckibin.messagesender.api.response.FailedDescription;
 import ru.sckibin.messagesender.api.response.MessageResponse;
 import ru.sckibin.messagesender.api.response.StatusResponse;
 import ru.sckibin.messagesender.entity.Message;
@@ -35,12 +37,19 @@ public class MessageUtil {
     public MessageDTO mapToDTO(MessageRequest messageRequest, MessageType type) {
         return switch (type) {
             case EMAIL -> mapToEmailEntity(messageRequest);
-            default -> mapToDefaultEntity(messageRequest, type);
+            default -> mapToDefaultEntity(messageRequest);
         };
     }
 
     public Message mapToEntity(MessageDTO dto) {
         return modelMapper.map(dto, Message.class);
+    }
+
+    public FailedDescription mapToDescription(MessageFailedCode code) {
+        return new FailedDescription(
+                code.code,
+                code.header
+        );
     }
 
     private MessageDTO mapToEmailEntity(MessageRequest messageRequest) {
@@ -55,7 +64,7 @@ public class MessageUtil {
                 .build();
     }
 
-    private MessageDTO mapToDefaultEntity(MessageRequest messageRequest, MessageType type) {
+    private MessageDTO mapToDefaultEntity(MessageRequest messageRequest) {
         return MessageDTO.builder()
                 .id(UUID.randomUUID())
                 .recipient(messageRequest.getRecipient())
@@ -63,7 +72,7 @@ public class MessageUtil {
                 .status(MessageStatus.FAILED)
                 .body(messageRequest.getText())
                 .createdAt(LocalDateTime.now())
-                .failedDescription(String.format("The type (%s) of message sending is unrealized", type.value))
+                .failedDescription(mapToDescription(MessageFailedCode.UNREALIZED_TYPE_EXCEPTION))
                 .build();
     }
 }
