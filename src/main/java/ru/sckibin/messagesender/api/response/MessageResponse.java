@@ -11,5 +11,5 @@ public class MessageResponse {
     private String type;
     private String status;
     private String recipient;
-    private String failedDescription = null;
+    private FailedDescription failedDescription = null;
 }
