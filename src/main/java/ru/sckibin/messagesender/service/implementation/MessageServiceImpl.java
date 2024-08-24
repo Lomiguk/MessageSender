@@ -1,6 +1,7 @@
 package ru.sckibin.messagesender.service.implementation;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -15,7 +16,7 @@ import ru.sckibin.messagesender.exception.UnrealizedMethodOfSendingException;
 import ru.sckibin.messagesender.repository.MessageRepository;
 import ru.sckibin.messagesender.repository.util.MessageSpecification;
 import ru.sckibin.messagesender.service.interfaces.MessageService;
-import ru.sckibin.messagesender.service.sender.TextSenderEmailImpl;
+import ru.sckibin.messagesender.service.sender.TextSender;
 import ru.sckibin.messagesender.util.MessageUtil;
 
 import java.time.LocalDateTime;
@@ -34,7 +35,8 @@ public class MessageServiceImpl implements MessageService {
     private static final int DEFAULT_PAGE_SIZE = 15;
 
     private final MessageRepository messageRepository;
-    private final TextSenderEmailImpl emailSender;
+    @Qualifier("emailSender")
+    private final TextSender emailSender;
     private final MessageUtil messageUtil;
 
     @Override
@@ -113,7 +115,6 @@ public class MessageServiceImpl implements MessageService {
     private void sendEmail(MessageDTO message) {
         setMessageStatus(message, MessageStatus.PROCESS);
         emailSender.sendTextMessage(message);
-        setMessageStatus(message, MessageStatus.SENT);
     }
 
     private void setMessageStatus(MessageDTO message, MessageStatus status) {
