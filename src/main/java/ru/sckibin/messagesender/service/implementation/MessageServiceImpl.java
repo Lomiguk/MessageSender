@@ -15,16 +15,19 @@ import ru.sckibin.messagesender.api.response.StatusResponse;
 import ru.sckibin.messagesender.entity.Message;
 import ru.sckibin.messagesender.exception.ExpectedEntityNotFoundException;
 import ru.sckibin.messagesender.exception.UnrealizedMethodOfSendingException;
+import ru.sckibin.messagesender.exception.ValidationException;
 import ru.sckibin.messagesender.repository.MessageRepository;
 import ru.sckibin.messagesender.repository.util.MessageSpecification;
 import ru.sckibin.messagesender.service.interfaces.MessageService;
 import ru.sckibin.messagesender.service.sender.TextSender;
+import ru.sckibin.messagesender.util.CheckHelper;
 import ru.sckibin.messagesender.util.MessageUtil;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.logging.Logger;
 
@@ -33,13 +36,16 @@ import java.util.logging.Logger;
 public class MessageServiceImpl implements MessageService {
 
     private static final Logger LOGGER = Logger.getLogger(MessageServiceImpl.class.getName());
+    // TODO Get from property
     private static final int DEFAULT_PAGE_NUMBER = 0;
+    // TODO Get from property
     private static final int DEFAULT_PAGE_SIZE = 15;
 
     private final MessageRepository messageRepository;
     @Qualifier("emailSender")
     private final TextSender emailSender;
     private final MessageUtil messageUtil;
+    private final CheckHelper checkHelper;
 
     @Override
     public Collection<MessageResponse> send(MessageRequest request) {
@@ -50,7 +56,12 @@ public class MessageServiceImpl implements MessageService {
             result.add(sendProcessing(message));
         }
 
-        return result;
+        // Getting actual Data
+        return result.stream()
+                .map((m) -> messageRepository.findById(m.getMessageId()))
+                .flatMap(Optional::stream)
+                .map(messageUtil::mapToMessageResponse)
+                .toList();
     }
 
     @Override
@@ -91,7 +102,10 @@ public class MessageServiceImpl implements MessageService {
 
     private void sendMessage(MessageDTO message) {
         switch (message.getType()) {
-            case EMAIL -> sendEmail(message);
+            case EMAIL -> {
+                checkHelper.checkEmailMessage(message);
+                sendEmail(message);
+            }
             /* case SMS -> {
 
             }  */
@@ -126,6 +140,8 @@ public class MessageServiceImpl implements MessageService {
             exceptionProcess(message, ex, MessageFailedCode.MAIL_EXCEPTION);
         } catch (IllegalArgumentException ex) {
             exceptionProcess(message, ex, MessageFailedCode.DB_EXCEPTION);
+        } catch (ValidationException ex) {
+            exceptionProcess(message, ex, MessageFailedCode.VALIDATION_EXCEPTION);
         } catch (Exception ex) {
             exceptionProcess(message, ex, MessageFailedCode.UNEXPECTED_EXCEPTION);
         }

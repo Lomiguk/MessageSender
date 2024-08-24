@@ -1,5 +1,6 @@
 package ru.sckibin.messagesender.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +32,7 @@ public class MessageStatusController {
     private final MessageService messageService;
 
     @PostMapping
+    @Operation(summary = "Sending message")
     public ResponseEntity<Collection<MessageResponse>> send(
             @Valid
             @RequestBody
@@ -43,6 +45,7 @@ public class MessageStatusController {
     }
 
     @GetMapping("/{id}/status")
+    @Operation(summary = "Getting message status")
     public ResponseEntity<StatusResponse> getStatus(
             @PathVariable UUID id
     ) {
@@ -53,6 +56,7 @@ public class MessageStatusController {
     }
 
     @GetMapping
+    @Operation(summary = "Getting message history")
     public ResponseEntity<List<MessageResponse>> getHistory(
             @RequestParam(required = false)
             String recipient,

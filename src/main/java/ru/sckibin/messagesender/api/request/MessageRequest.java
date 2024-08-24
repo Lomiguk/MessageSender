@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
 import ru.sckibin.messagesender.api.enumType.MessageType;
 
-import java.util.Collection;
+import java.util.Set;
 
 @Data
 public class MessageRequest {
@@ -14,7 +14,7 @@ public class MessageRequest {
     private String recipient;
     private String subject;
     @NotEmpty(message = "Type list must not be empty")
-    private Collection<MessageType> type;
+    private Set<MessageType> type;
     @NotBlank(message = "Body is mandatory")
     private String text;
 }
